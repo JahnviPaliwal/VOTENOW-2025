@@ -1,10 +1,10 @@
 // ============================================================
 // script.js - Main JavaScript File
-// Handles OTP generation, chart rendering, animations
+// Chart rendering, animations, vote confirmation
+// (OTP removed — replaced with PIN-based login)
 // ============================================================
 
 // ----- Landing Page Auto-Redirect -----
-// Called from index.php after 2.5 seconds
 function startRedirect(url, seconds) {
     let remaining = seconds;
     const countEl = document.getElementById('countdown');
@@ -18,33 +18,10 @@ function startRedirect(url, seconds) {
     }, 1000);
 }
 
-// ----- OTP Simulation -----
-// Generates a random 6-digit OTP and stores in hidden field + displays it
-function generateOTP() {
-    const otp = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
-    document.getElementById('otp_generated').value = otp;
-    document.getElementById('otp_display_code').textContent = otp;
-    document.getElementById('otp-box').style.display = 'block';
-    document.getElementById('verify-section').style.display = 'block';
-    document.getElementById('generate-btn').textContent = 'Resend OTP';
-    document.getElementById('generate-btn').style.backgroundColor = '#f9ab00';
-    return false; // prevent form submit
-}
-
-// ----- Phone Number Validation -----
-function validatePhone(input) {
-    input.value = input.value.replace(/[^0-9]/g, '');
-    if (input.value.length > 10) {
-        input.value = input.value.substring(0, 10);
-    }
-}
-
-// ----- Bar Chart for Results -----
-// Draws a simple bar chart using Chart.js (loaded via CDN in results.php)
+// ----- Bar Chart for Results (uses Chart.js CDN) -----
 function drawResultsChart(labels, data, totalVotes) {
     const ctx = document.getElementById('resultsChart').getContext('2d');
 
-    // Generate colors for each bar
     const colors = [
         'rgba(26, 115, 232, 0.85)',
         'rgba(52, 168, 83, 0.85)',
@@ -69,14 +46,13 @@ function drawResultsChart(labels, data, totalVotes) {
         options: {
             responsive: true,
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
                     callbacks: {
                         label: function (context) {
                             const votes = context.parsed.y;
-                            const pct = totalVotes > 0 ? ((votes / totalVotes) * 100).toFixed(1) : 0;
+                            const pct = totalVotes > 0
+                                ? ((votes / totalVotes) * 100).toFixed(1) : 0;
                             return ' ' + votes + ' votes (' + pct + '%)';
                         }
                     }
@@ -85,38 +61,26 @@ function drawResultsChart(labels, data, totalVotes) {
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        precision: 0
-                    },
-                    title: {
-                        display: true,
-                        text: 'Number of Votes'
-                    }
+                    ticks: { stepSize: 1, precision: 0 },
+                    title: { display: true, text: 'Number of Votes' }
                 },
                 x: {
-                    title: {
-                        display: true,
-                        text: 'Candidates'
-                    }
+                    title: { display: true, text: 'Candidates' }
                 }
             }
         }
     });
 }
 
-// ----- Confirm Vote -----
+// ----- Confirm before voting -----
 function confirmVote(candidateName) {
-    return confirm('Are you sure you want to vote for ' + candidateName + '?\nThis action cannot be undone.');
+    return confirm('Vote for ' + candidateName + '?\n\nThis cannot be undone.');
 }
 
-// ----- Animate vote bars on results page -----
+// ----- Animate vote progress bars on results page -----
 document.addEventListener('DOMContentLoaded', function () {
-    const bars = document.querySelectorAll('.vote-bar');
-    bars.forEach(function (bar) {
-        const targetWidth = bar.getAttribute('data-width');
-        setTimeout(function () {
-            bar.style.width = targetWidth + '%';
-        }, 100);
+    document.querySelectorAll('.vote-bar').forEach(function (bar) {
+        const w = bar.getAttribute('data-width');
+        setTimeout(function () { bar.style.width = w + '%'; }, 120);
     });
 });
